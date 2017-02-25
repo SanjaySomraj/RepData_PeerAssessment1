@@ -1,32 +1,23 @@
----
-title: "Reproducible Research: Assessment 01"
-author: "Sanjay Somraj"
-date: "February 24, 2017"
-output: 
-  html_document: 
-    keep_md: yes
----
+# Reproducible Research: Assessment 01
+Sanjay Somraj  
+February 24, 2017  
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
-```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
-library(ggplot2)
-library(scales)
-library(Hmisc)
-```
+
+
 
 ## 1. Loading and preprocessing the data
 ##### **a. Load the data**
-```{r results='markup', warning=TRUE, message=TRUE}
+
+```r
 if(!file.exists('activity.csv')){
     unzip('activity.zip')
 }
 userActivityData <- read.csv('activity.csv')
 ```
 ##### **b. Process/transform the data (if necessary)**
-```{r}
+
+```r
 # Remove all cases with missing values - NAs
 userActivity <- userActivityData[complete.cases(userActivityData),]
 ```
@@ -34,37 +25,31 @@ userActivity <- userActivityData[complete.cases(userActivityData),]
 -----
 
 ## 2. What is mean total number of steps taken per day?
-```{r}
+
+```r
 stepsPerDay <- aggregate(steps ~ date, userActivity, sum)
 ```
 
 ##### **a. Make a histogram of the total number of steps taken each day**
-```{r echo=FALSE}
-ggplot(stepsPerDay, aes(x = steps)) + 
-     geom_histogram(col="red", 
-                    fill = "orange", 
-                    binwidth = 1000) + 
-     labs(title="Histogram of Steps Taken per day", 
-          x = "Number of Steps per day", 
-          y = "Number of times in a day(Frequency)") + 
-     theme_bw() 
-```
+![](PA1_Template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
 ##### **b. Calculate and report the mean and median total number of steps taken per day**
-```{r}
+
+```r
 stepsMean   <- format(mean(stepsPerDay$steps),nsmall = 2)
 stepsMedian <- format(median(stepsPerDay$steps), nsmall = 2)
 ```
 
 -----
 
-* Mean: `r stepsMean`  
-* Median:  `r stepsMedian`
+* Mean: 10766.19  
+* Median:  10765
 
 -----
 
 ## 2. What is the average daily activity pattern?
-```{r}
+
+```r
 stepsPerInterval <- aggregate(userActivity$steps, 
                                 by = list(interval = userActivity$interval),
                                 FUN=mean)
@@ -72,15 +57,19 @@ colnames(stepsPerInterval) <- c("interval", "steps")
 ```
 
 ##### **a. Make a time series plot**
-```{r}
+
+```r
 ggplot(stepsPerInterval, aes(x=interval, y=steps)) +   
      geom_line(color="orange", size=1) +  
      labs(title="Time series- 5min Interval & mean number of steps averaged across all days", x="Interval", y="Number of steps") +  
      theme_bw()
 ```
 
+![](PA1_Template_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
 ##### **b. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?**
-```{r}
+
+```r
 maxIntervalData <- stepsPerInterval[which.max(stepsPerInterval$steps),]
 maxInterval <- maxIntervalData$interval
 maxSteps <- format(maxIntervalData$steps,digits = 2, nsmall = 2)
@@ -88,19 +77,20 @@ maxSteps <- format(maxIntervalData$steps,digits = 2, nsmall = 2)
 
 -----
 
-* The **`r maxInterval`th** interval has Maximum Steps of **`r maxSteps`**.
+* The **835th** interval has Maximum Steps of **206.17**.
 
 -----
 
 ## 3. Imputing missing values
 ##### **a. Calculate and report the total number of missing values in the dataset**
-```{r}
+
+```r
 numMissingValues <- length(which(is.na(userActivityData$steps)))
 ```
 
 -----
 
-* Number of missing values: `r numMissingValues`
+* Number of missing values: 2304
 
 -----
 
@@ -112,7 +102,8 @@ numMissingValues <- length(which(is.na(userActivityData$steps)))
 -----
 
 ##### **c. Create a new dataset that is equal to the original dataset but with the missing data filled in.**
-```{r}
+
+```r
 userActivityDataImputed <- userActivityData
 userActivityDataImputed$steps <- impute(userActivityData$steps, fun=mean)
 ```
@@ -120,7 +111,8 @@ userActivityDataImputed$steps <- impute(userActivityData$steps, fun=mean)
 -----
 
 ##### **d. Make a histogram of the total number of steps taken each day**
-```{r}
+
+```r
 stepsPerDayImputed <- aggregate(steps ~ date, userActivityDataImputed, sum)
 ggplot(stepsPerDayImputed, aes(x = steps)) + 
      geom_histogram(col="red", 
@@ -132,20 +124,23 @@ ggplot(stepsPerDayImputed, aes(x = steps)) +
      theme_bw()
 ```
 
+![](PA1_Template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+
 ##### **e. Calculate and report the mean and median total number of steps taken per day.**
 ##### **   Do these values differ from the estimates from the first part of the assignment?** 
-```{r}
+
+```r
 stepsPerDayMeanImputed <- format(mean(stepsPerDayImputed$steps), nsmall = 2)
 stepsPerDayMedianImputed <- format(median(stepsPerDayImputed$steps), nsmall = 2)
 ```
 
 ###### **Before Imputing**
-* Mean: `r stepsMean`  
-* Median:  `r stepsMedian`
+* Mean: 10766.19  
+* Median:  10765
 
 ###### **After Imputing**
-* Mean (Imputed): `r stepsPerDayMeanImputed`
-* Median (Imputed):  `r stepsPerDayMedianImputed`
+* Mean (Imputed): 10766.19
+* Median (Imputed):  10766.19
 
 ###### **Observations:**
 ###### 1) The mean values have remained same, while the median has shifted and now macthes the mean
@@ -158,7 +153,8 @@ stepsPerDayMedianImputed <- format(median(stepsPerDayImputed$steps), nsmall = 2)
 ## 5. Are there differences in activity patterns between weekdays and weekends?
 ##### **a. Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.**
 
-```{r}
+
+```r
 userActivityDataImputed$weekday <- weekdays(as.Date(userActivityDataImputed$date))
 userActivityDataImputed$dayType <- ifelse(userActivityDataImputed$weekday %in% c("Saturday","Sunday"), "Weekend","Weekday")
 averagedActivityDataImputed <- aggregate(steps ~ interval + dayType, 
@@ -167,7 +163,8 @@ averagedActivityDataImputed <- aggregate(steps ~ interval + dayType,
 
 ##### **b. Make a panel plot containing a time series plot**
 
-```{r}
+
+```r
 ggplot(averagedActivityDataImputed, aes(interval, steps)) + 
     geom_line(aes(col=factor(dayType))) + 
     facet_grid(dayType ~ .) +
@@ -176,3 +173,5 @@ ggplot(averagedActivityDataImputed, aes(interval, steps)) +
           title = "Histogram of Steps Taken per day")+
      theme(legend.title=element_blank())
 ```
+
+![](PA1_Template_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
